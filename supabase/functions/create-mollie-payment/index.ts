@@ -10,7 +10,7 @@ Deno.serve(async req=>{
   const{data:auth,error:authErr}=await userDb.auth.getUser();if(authErr||!auth.user)return new Response(JSON.stringify({error:"Unauthorized"}),{status:401,headers});
   const{reservationId}=await req.json();
   const{data:r,error}=await userDb.from("reservations").select("id,created_by,price_cents,payment_status,status,family_members(name)").eq("id",reservationId).single();
-  if(error||!r||r.status!=="confirmed"||["paid","cancelled","refunded"].includes(r.payment_status))return new Response(JSON.stringify({error:"Reservatie kan niet betaald worden."}),{status:403,headers});
+  if(error||!r||r.created_by!==auth.user.id||r.status!=="confirmed"||["paid","cancelled","refunded"].includes(r.payment_status))return new Response(JSON.stringify({error:"Reservatie kan niet betaald worden."}),{status:403,headers});
   const admin=createClient(url,service);
   const{data:existing}=await admin.from("payments").select("checkout_url").eq("reservation_id",r.id).eq("status","open").order("attempt",{ascending:false}).limit(1).maybeSingle();
   if(existing?.checkout_url)return new Response(JSON.stringify({checkoutUrl:existing.checkout_url}),{headers});
