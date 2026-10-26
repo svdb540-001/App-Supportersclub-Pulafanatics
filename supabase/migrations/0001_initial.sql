@@ -106,7 +106,7 @@ begin
  if r.id is null then raise exception 'Reservatie bestaat niet.'; end if;
  if r.created_by<>auth.uid() and not public.is_admin() then raise exception 'Geen toegang.'; end if;
  if r.status='cancelled' then return; end if;
- update public.reservations set status='cancelled' where id=r.id;
+ update public.reservations set status='cancelled',payment_status=case when payment_status in('paid','pending') then 'review' else payment_status end where id=r.id;
  if r.status='confirmed' then select * into next_r from public.reservations where event_id=r.event_id and status='waitlist' order by queue_position limit 1 for update; if next_r.id is not null then update public.reservations set status='confirmed' where id=next_r.id; end if; end if;
 end $$;
 revoke all on function public.register_household_for_event(uuid,uuid[]) from public;
