@@ -1,29 +1,36 @@
 # Pulafanatics supportersapp
 
-Mobiele PWA-prototype voor Supportersclub Pulafanatics en KFC Punt-Larum.
+Productiegerichte PWA-basis. De lokale demo-opslag en demo-rolwissel zijn verwijderd. De app is gebouwd voor Supabase Auth/Postgres/RLS en server-side Mollie Edge Functions.
 
-## In deze versie
+## Klaar in deze branch
 
-- Kalender voor wedstrijden van de eerste ploeg en clubactiviteiten.
-- Beheerder kan wedstrijden en activiteiten toevoegen, met buscapaciteit en uiterste inschrijfdatum.
-- Supporters kunnen gezinsleden toevoegen en meerdere personen tegelijk voor een busrit inschrijven.
-- Beheerder kan per persoon de status beheren: Memberchip, Memberchip kind, Steunkaart, Steunkaart kind of Geen kaart.
-- Tarieven per status en voorrangsregels zijn instelbaar. Bij een inschrijving worden bedragen per persoon berekend en als lokaal betaalverzoek getoond.
-- Busplaatsen, wachtlijstsignaal, betaalstatusbeheer en CSV-export.
-- Installable PWA met eenvoudige offline shell.
+- E-mailaccounts, bevestigingsmail, wachtwoordreset en afmelden.
+- Huishouden met kinderen als gezinsleden.
+- Beheerbare Memberchip-, Memberchip kind-, Steunkaart- en andere statussen met tarief per persoon.
+- Atomaire inschrijving per passagier, capaciteit, dubbele-inschrijving blokkering, prijsopname, wachtlijst en annulering/promotie.
+- Kalender, busbeheer, dashboard en links naar de officiële RBFA/Voetbal Vlaanderen ploegpagina.
+- Mollie-betaallinks aanmaken op de server; betaling wordt pas als betaald gezien na serververificatie bij Mollie.
+- Vercel, securityheaders, GitHub buildworkflow, Dependabot en go-livechecklist.
 
-## Demo gebruiken
+## Koppelen
 
-Open `index.html` lokaal of zet GitHub Pages aan voor de repository. De startpagina heeft een knop **Wissel demo rol**. Alles wordt alleen in localStorage van die browser bewaard. De twee vooraf ingevulde kalenderitems zijn voorbeelddata; vervang ze door de officiële wedstrijden en activiteiten.
+1. Maak aparte Supabase-projecten voor TEST en PRODUCTIE.
+2. Voer supabase/migrations/0001_initial.sql in Supabase TEST uit.
+3. Deploy de functies create-mollie-payment en mollie-webhook naar TEST.
+4. Voeg MOLLIE_API_KEY en APP_URL als Supabase Edge Function Secrets toe. De projectwaarden SUPABASE_URL, SUPABASE_ANON_KEY en SUPABASE_SERVICE_ROLE_KEY blijven server-side.
+5. Maak een testaccount, bevestig e-mail en wijs het bestuurdersaccount toe met security/bootstrap-admin.sql.example.
+6. Stel Vercel Preview in met alleen de TEST-waarden uit .env.example. Gebruik aparte PRODUCTIE-waarden voor Production.
+7. Koppel de repository aan Vercel: build npm run build, output dist.
+8. Test de volledige checklist in security/GO-LIVE-CHECKLIST.md voordat je echte gegevens invoert.
+9. Maak productie-backend, auth en Mollie Live pas klaar na acceptatie van de testomgeving.
+10. Koppel app.pulafanatics.be bij Vercel; neem de DNS-records exact over in Webnode en stel het domein daarna in bij Supabase Auth.
 
-**Voer geen echte ledengegevens in.** De repository is publiek en deze versie heeft geen echte accounts, centrale database, rolbeveiliging of betaalverwerking. Demo-rolwissel is geen toegangscontrole. De getoonde betaalverzoeken worden niet naar leden verstuurd en er wordt geen geld geïnd.
+Lokaal: kopieer .env.example naar .env.local, vul de TEST-waarden in, voer npm install en npm run dev uit. .env.local staat in .gitignore.
 
-## Nodig voor ingebruikname
+## RBFA-kalender
 
-1. Maak de GitHub-repository privé en activeer MFA voor persoonlijke accounts.
-2. Koppel Supabase Auth en een Postgres-database met RLS; beperk leden tot hun eigen huishouden en beheerders tot expliciete beheerrechten.
-3. Voeg server-side reserveringsfuncties toe die capaciteit, dubbelboekingen, voorrang, tarieven en prijsopname atomair valideren; bouw ook annulering en wachtlijstpromotie.
-4. Laat een beveiligde serverfunctie een Mollie-betaallink maken en verifieer de webhook voordat een betaling als voltooid geldt. Bewaar Mollie-sleutels nooit in browsercode of GitHub.
-5. Laad de officiële seizoenskalender in en stel de werkelijke tarieven en buscapaciteiten vast.
+De officiële eerste-elftalpagina is https://www.voetbalvlaanderen.be/club/2559/ploeg/365579. De app linkt naar die pagina en beheerders kunnen geverifieerde wedstrijden invoeren. Automatische import is nog niet geconfigureerd: er is nog geen bevestigde openbare ICS/API-feed voor deze ploeg in de projectconfiguratie. Wanneer jullie de officiële feed-URL hebben, kan die aan de importkoppeling worden gehangen.
 
-Deze repository bevat bewust nog geen API-sleutels of productiebetalingen.
+## Nog aan te sluiten vóór live
+
+Supabase, Mollie, Vercel, SMTP en DNS moeten op de Pulafanatics-accounts worden aangesloten. Het repo bevat geen echte links, accounts of sleutels. Gebruik voor test en preview uitsluitend fictieve gegevens. Laat SQL/RLS, de betaalflow en privacydocumenten nakijken vóór echte persoonsgegevens worden verwerkt.
